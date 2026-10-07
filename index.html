@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>おんさんそうさんN4日本語 20題特訓測驗</title>
+    <style>
+        :root {
+            --bg-purple: linear-gradient(135deg, #E0BBE4, #F2E3F7);
+            --bg-pink: linear-gradient(135deg, #FFD1DC, #FFF0F5);
+            --bg-mint: linear-gradient(135deg, #B5EAD7, #E0F5EC);
+            --bg-yellow: linear-gradient(135deg, #FFFFB5, #FFFFE0);
+            --bg-blue: linear-gradient(135deg, #C7CEEA, #E8EAF6);
+            --text-main: #5C4B51;
+            --accent: #957DAD;
+            --box-bg: rgba(255, 255, 255, 0.95);
+            --correct: #B5EAD7;
+            --wrong: #FFD1DC;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Hiragino Maru Gothic ProN', 'Rounded M+ 1c', 'Quicksand', sans-serif;
+            color: var(--text-main);
+            background: var(--bg-purple);
+            background-attachment: fixed;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 { 
+            color: var(--accent); 
+            font-size: 2.2rem; 
+            text-align: center; 
+            letter-spacing: 2px;
+            background: var(--box-bg);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(149, 125, 173, 0.15);
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: var(--box-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(149, 125, 173, 0.15);
+            margin-bottom: 30px;
+            backdrop-filter: blur(8px);
+            border-left: 8px solid var(--accent);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .question-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .question-hint {
+            color: #777;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .options { grid-template-columns: 1fr; }
+        }
+
+        .opt-btn {
+            background: #F5F6FA;
+            border: 2px solid transparent;
+            padding: 15px;
+            font-size: 1.05rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            color: var(--text-main);
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .opt-btn:hover:not(.disabled) {
+            background: #E8EAF6;
+            transform: translateY(-2px);
+            border-color: var(--accent);
+        }
+
+        .opt-btn.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .answer-box {
+            background: #F3E5F5;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            text-align: left;
+            display: none;
+            border-left: 5px solid var(--accent);
+            animation: fadeIn 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .answer-box.correct-bg { background: #E0F5EC; border-left-color: #28a745; }
+        .answer-box.wrong-bg { background: #FFF0F5; border-left-color: #dc3545; }
+
+        .correct-status {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .explanation p {
+            margin: 5px 0;
+            font-size: 0.95rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .score-board {
+            text-align: center;
+            background: var(--box-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(149, 125, 173, 0.2);
+            margin-top: 40px;
+            display: none;
+        }
+
+        .action-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: 0.3s;
+            font-weight: bold;
+        }
+
+        .action-btn:hover { background: #7C6692; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📝 N4文法 20題特訓<br><span style="font-size: 1.2rem; color: #777;">〜しかない / 〜し / 間に / うちに / 最中に</span></h1>
+    
+    <div id="quiz-container">
+        <!-- 題目由 JavaScript 動態產生 -->
+    </div>
+
+    <div id="score-board" class="score-board"></div>
+</div>
+
+<script>
+    const quizData = [
+        // --- 舊文法複習 (1~6題) ---
+        {
+            q: "1. 今月のお小遣いが、あと1000円（   ）。",
+            hint: "（這個月的零用錢只剩下1000日圓了...）",
+            options: ["しかありません", "しかあります", "ではありません", "だけありません"],
+            correct: 0,
+            exp: "A (正確): 「しか」必須搭配否定形，表達數量「不夠、太少」的主觀遺憾。<br>B (錯誤): しか不能接肯定形。<br>C (錯誤): 語法錯誤，ではありません是否定名詞用的。<br>D (錯誤): だけ通常接肯定。"
+        },
+        {
+            q: "2. 家族は４人なのに、傘が３本（   ）。",
+            hint: "（家裡有四個人，傘卻只有三把。）",
+            options: ["よりありません", "しかあります", "しかありません", "だけありません"],
+            correct: 2,
+            exp: "A (錯誤): 無此用法。<br>B (錯誤): しか不能接肯定。<br>C (正確): 強調數量不足（4人卻只有3把傘），使用「數量詞＋しかない/しかありません」。<br>D (錯誤): だけ通常接肯定。"
+        },
+        {
+            q: "3. 「もう時間がないから、走る（   ）。」",
+            hint: "（因為已經沒有時間了，只能用跑的了。）",
+            options: ["しか", "しかありません", "しかない", "しかある"],
+            correct: 2,
+            exp: "A (錯誤): 句子未完成。<br>B (錯誤): 雖然也是正確文法，但前面的「走る」是普通形，且整句語氣較隨意，接「しかない」最自然。（如果是「走るしかありません」也通，但在本題選項中 C 最直接）。<br>C (正確): 動詞辭書形＋しかない，表示「只好/只能這麼做」。<br>D (錯誤): しか不接肯定形。"
+        },
+        {
+            q: "4. 日本のコンビニは便利（   ）、品揃えもいい（   ）、とても助かります。",
+            hint: "（日本便利商店又方便、商品種類又齊全，真的幫了大忙。）",
+            options: ["し / し", "だし / し", "なし / だし", "で / で"],
+            correct: 1,
+            exp: "A (錯誤): 便利是な形容詞，不能直接加し。<br>B (正確): 「便利」是な形容詞，必須加上「だ」變成普通形「便利だし」；「いい」はい形容詞，直接加「し」。<br>C (錯誤): 接續錯誤。<br>D (錯誤): で/で 是並列，但不帶有「列舉多項優點」的強調語氣。"
+        },
+        {
+            q: "5. 秋葉原はアニメグッズがある（   ）、電化製品もある（   ）、絶対に行きたい！",
+            hint: "（秋葉原既有動漫周邊又有電器產品，我絕對要去！）",
+            options: ["し / し", "だし / だし", "て / て", "なし / なし"],
+            correct: 0,
+            exp: "A (正確): 「ある」是動詞普通形，直接接續「し」來列舉多個前往秋葉原的理由。<br>B (錯誤): 動詞不加だし。<br>C (錯誤): て形只是單純連接，不如「し」有強烈列舉理由的感覺。<br>D (錯誤): 動詞不加なし。"
+        },
+        {
+            q: "6. 今日は雨（   ）、風も強いし、外に出たくない。",
+            hint: "（今天既下雨、風又大，不想出門。）",
+            options: ["し", "なだし", "のし", "だし"],
+            correct: 3,
+            exp: "A (錯誤): 名詞不能直接加し。<br>B (錯誤): 名詞不加な。<br>C (錯誤): 名詞不加のし。<br>D (正確): 名詞(雨)的普通形要加「だ」，變成「雨だし」。"
+        },
+        
+        // --- 間に (7~10題) ---
+        {
+            q: "7. そうさんが運転している（   ）、Nickは後ろの席で寝ていました。",
+            hint: "（爸爸開車的期間，Nick在後座睡著了。）",
+            options: ["間に", "うちに", "最中に", "あとに"],
+            correct: 0,
+            exp: "A (正確): 單純描述在「開車」這個狀態持續的時間範圍內，發生了「睡覺」這件事。<br>B (錯誤): うちに強調「把握時機」，這裡沒有把握時機的語感。<br>C (錯誤): 最中に強調「被打斷的意外」，睡覺並沒有打斷開車。<br>D (錯誤): 意思變成開車之後。"
+        },
+        {
+            q: "8. おんさんがおにぎりを選んでいる（   ）、そうさんは飲み物を取りに行きました。",
+            hint: "（媽媽在選飯糰的時候，爸爸去拿了飲料。）",
+            options: ["うちに", "最中に", "間に", "前に"],
+            correct: 2,
+            exp: "A (錯誤): 不是為了把握狀態改變前的時機。<br>B (錯誤): 拿飲料並沒有打斷媽媽選飯糰。<br>C (正確): 表示在「媽媽選飯糰」這段時間內，爸爸完成了「拿飲料」的動作。<br>D (錯誤): 意思變成選飯糰之前。"
+        },
+        {
+            q: "9. 日本にいる（   ）、いろいろな所へ行きたいです。",
+            hint: "（在日本的期間，想去很多地方。）",
+            options: ["間に", "最中に", "あとに", "ときに"],
+            correct: 0,
+            exp: "A (正確): 在「待在日本」這個長時間的區間內，想要完成去很多地方的願望。<br>B (錯誤): 最中に用於短暫動作被打斷。<br>C (錯誤): 意思變成離開日本之後。<br>D (錯誤): ときに 語氣較平淡，間に 更能強調「在這段受限的期間內」。"
+        },
+        {
+            q: "10. 先生が話している（   ）、学生はメモを取っていました。",
+            hint: "（老師說話的期間，學生們做著筆記。）",
+            options: ["最中に", "うちに", "ところに", "間に"],
+            correct: 3,
+            exp: "A (錯誤): 學生做筆記並沒有打斷老師說話。<br>B (錯誤): 沒有「趁機」的意思。<br>C (錯誤): ところに 用法不對。<br>D (正確): 在老師說話的「這一段時間」裡面，學生同步進行著動作。"
+        },
+
+        // --- うちに (11~15題) ---
+        {
+            q: "11. ファミチキが温かい（   ）、早く食べましょう。",
+            hint: "（趁著炸雞還熱的時候，趕快吃吧。）",
+            options: ["間に", "うちに", "最中に", "あとに"],
+            correct: 1,
+            exp: "A (錯誤): 雖然也是時間區間，但沒有「錯過就來不及」的急迫感。<br>B (正確): 強調「趁著狀態（熱的）改變之前」趕快做，是うち的典型用法。<br>C (錯誤): 最中に不接形容詞。<br>D (錯誤): 意思完全相反。"
+        },
+        {
+            q: "12. 桜がきれいな（   ）、写真を撮りましょう。",
+            hint: "（趁著櫻花還很漂亮的時候，來拍照吧。）",
+            options: ["うちに", "間に", "最中に", "あとに"],
+            correct: 0,
+            exp: "A (正確): 櫻花凋謝前（狀態改變前），趁著漂亮的時候趕快拍。な形容詞＋うちに。<br>B (錯誤): 語感不夠強調「把握時機」。<br>C (錯誤): 最中に不接形容詞。<br>D (錯誤): 意思錯誤。"
+        },
+        {
+            q: "13. 忘れない（   ）、スケジュールをメモします。",
+            hint: "（趁著還沒忘記，把行程寫下來。）",
+            options: ["最中に", "間に", "うちに", "あとに"],
+            correct: 2,
+            exp: "A (錯誤): 意思不通。<br>B (錯誤): 習慣上「ない形」多搭配「うちに」。<br>C (正確): 在「忘記」這個狀態發生之前（趁還沒忘），趕快記錄下來。<br>D (錯誤): 意思相反。"
+        },
+        {
+            q: "14. 若い（   ）、いろいろな経験をしたほうがいいですよ。",
+            hint: "（趁著年輕，多累積一點經驗比較好喔。）",
+            options: ["最中に", "うちに", "間に", "前に"],
+            correct: 1,
+            exp: "A (錯誤): 不接い形容詞。<br>B (正確): 青春不回頭，強調把握「年輕」這個不會永遠持續的狀態。<br>C (錯誤): 語氣不夠強調珍惜時機。<br>D (錯誤): 意思變成變年輕之前。"
+        },
+        {
+            q: "15. 雨が降らない（   ）、ホテルへ帰りましょう。",
+            hint: "（趁著還沒下雨，我們回飯店吧。）",
+            options: ["間に", "うちに", "最中に", "ときに"],
+            correct: 1,
+            exp: "A (錯誤): ない形較少配間に。<br>B (正確): 趁著「還沒下雨」的狀態改變（變成下雨）前趕快行動。<br>C (錯誤): 意思不通。<br>D (錯誤): 語氣平淡，沒有催促感。"
+        },
+
+        // --- 最中に (16~20題) ---
+        {
+            q: "16. レジでお金を払っている（   ）、財布を落としてしまいました。",
+            hint: "（正當在收銀台付錢付到一半時，把錢包掉在地上了。）",
+            options: ["間に", "うちに", "最中に", "前に"],
+            correct: 2,
+            exp: "A (錯誤): 語氣平淡。<br>B (錯誤): 不是趁機。<br>C (正確): 強調動作進行到最專心的一半時，發生了「掉錢包」這個打斷動作的意外。<br>D (錯誤): 意思錯誤。"
+        },
+        {
+            q: "17. 家族で相談している（   ）、電車が来ました。",
+            hint: "（家族討論到一半的時候，電車來了。）",
+            options: ["最中に", "間に", "うちに", "あとに"],
+            correct: 0,
+            exp: "A (正確): 電車的到來中斷了正在專心進行的討論。<br>B (錯誤): 間に用於平行進行的事，但電車來了會中斷討論。<br>C (錯誤): 不是趁機。<br>D (錯誤): 意思錯誤。"
+        },
+        {
+            q: "18. 会議の（   ）、携帯電話が鳴ってしまいました。",
+            hint: "（正當開會開到一半時，手機響了起來。）",
+            options: ["間に", "最中に", "うちに", "ときに"],
+            correct: 1,
+            exp: "A (錯誤): 名詞接續通常用「の間（あいだ）に」，但語感不如最中に強烈。<br>B (正確): 會議進行到一半時被手機鈴聲打斷了。名詞接續為「名詞＋の＋最中に」。<br>C (錯誤): 不能這樣接。<br>D (錯誤): 語氣不足以表達被打斷的突發感。"
+        },
+        {
+            q: "19. シャワーを浴びている（   ）、突然電気が消えました。",
+            hint: "（洗澡洗到一半時，突然停電了。）",
+            options: ["うちに", "間に", "あとに", "最中に"],
+            correct: 3,
+            exp: "A (錯誤): 不是趁著洗澡。<br>B (錯誤): 洗澡不是單純的背景時間，停電造成了嚴重妨礙。<br>C (錯誤): 意思錯誤。<br>D (正確): 正在進行洗澡的動作時，遭遇了停電這個妨礙動作繼續進行的突發狀況。"
+        },
+        {
+            q: "20. 地図を見ている（   ）、突然雨が降ってきました。",
+            hint: "（看地圖看到一半時，突然下起雨來了。）",
+            options: ["最中に", "間に", "うちに", "前に"],
+            correct: 0,
+            exp: "A (正確): 正在看地圖的動作被突如其來的雨給打斷了。<br>B (錯誤): 間に沒有「意外、妨礙」的語感。<br>C (錯誤): 不是趁機。<br>D (錯誤): 意思錯誤。"
+        }
+    ];
+
+    let answeredCount = 0;
+    let correctCount = 0;
+    const quizContainer = document.getElementById('quiz-container');
+
+    quizData.forEach((item, index) => {
+        // 建立外層卡片
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.id = `q-card-${index}`;
+
+        // 題目
+        const qTitle = document.createElement('div');
+        qTitle.className = 'question-title';
+        qTitle.innerHTML = item.q;
+        card.appendChild(qTitle);
+
+        // 中文提示
+        const qHint = document.createElement('div');
+        qHint.className = 'question-hint';
+        qHint.innerHTML = item.hint;
+        card.appendChild(qHint);
+
+        // 選項區
+        const optionsDiv = document.createElement('div');
+        optionsDiv.className = 'options';
+
+        item.options.forEach((optText, optIndex) => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerHTML = `${String.fromCharCode(65 + optIndex)}. ${optText}`;
+            
+            // 點擊事件
+            btn.addEventListener('click', () => handleAnswer(index, optIndex, card, optionsDiv));
+            optionsDiv.appendChild(btn);
+        });
+
+        card.appendChild(optionsDiv);
+
+        // 解答解說區塊 (預設隱藏)
+        const answerBox = document.createElement('div');
+        answerBox.className = 'answer-box';
+        answerBox.id = `ans-box-${index}`;
+        card.appendChild(answerBox);
+
+        quizContainer.appendChild(card);
+    });
+
+    // 處理作答邏輯
+    function handleAnswer(qIndex, selectedIndex, cardElement, optionsDiv) {
+        const item = quizData[qIndex];
+        const answerBox = document.getElementById(`ans-box-${qIndex}`);
+        const isCorrect = (selectedIndex === item.correct);
+        const buttons = optionsDiv.querySelectorAll('.opt-btn');
+
+        // 禁用所有按鈕
+        buttons.forEach((btn, i) => {
+            btn.classList.add('disabled');
+            // 標示正確答案
+            if (i === item.correct) {
+                btn.style.background = 'var(--correct)';
+                btn.style.color = '#333';
+                btn.style.border = '2px solid #88D4B4';
+            }
+            // 標示點錯的答案
+            if (!isCorrect && i === selectedIndex) {
+                btn.style.background = 'var(--wrong)';
+                btn.style.color = '#333';
+                btn.style.border = '2px solid #F4A5B7';
+            }
+        });
+
+        // 顯示解析
+        answerBox.style.display = 'block';
+        if (isCorrect) {
+            answerBox.classList.add('correct-bg');
+            answerBox.innerHTML = `
+                <div class="correct-status" style="color: #155724;">⭕ 素晴らしい！正解です！</div>
+                <div class="explanation">${item.exp}</div>
+            `;
+            correctCount++;
+        } else {
+            answerBox.classList.add('wrong-bg');
+            answerBox.innerHTML = `
+                <div class="correct-status" style="color: #721c24;">❌ 残念！不正解です。</div>
+                <div class="explanation"><strong>正確答案是：${String.fromCharCode(65 + item.correct)}</strong><br><br>${item.exp}</div>
+            `;
+        }
+
+        answeredCount++;
+        checkCompletion();
+    }
+
+    // 檢查是否全部作答完畢
+    function checkCompletion() {
+        if (answeredCount === quizData.length) {
+            const scoreBoard = document.getElementById('score-board');
+            const score = Math.round((correctCount / quizData.length) * 100);
+            scoreBoard.style.display = 'block';
+            
+            let message = "";
+            if(score === 100) message = "完璧です！文法マスターですね！ 🎉";
+            else if(score >= 80) message = "よくできました！その調子です！ 👏";
+            else if(score >= 60) message = "合格です！間違えたところを復習しましょう！ 💪";
+            else message = "もう一度復習して、再チャレンジしましょう！ 📚";
+
+            scoreBoard.innerHTML = `
+                <h2 style="color: var(--accent); margin-bottom: 10px;">測驗結束！</h2>
+                <div style="font-size: 1.2rem; margin-bottom: 15px;">您的得分是：<span style="font-size: 2rem; color: #E74C3C; font-weight: bold;">${score}</span> 分</div>
+                <div style="font-size: 1rem; color: #555;">( 答對 ${correctCount} 題 / 共 ${quizData.length} 題 )</div>
+                <div style="margin-top: 20px; color: var(--text-main); font-size: 1.1rem; font-weight: bold;">${message}</div>
+                <button class="action-btn" onclick="location.reload()">もう一回挑戦する (再測一次) 🔄</button>
+            `;
+            
+            // 自動捲動到底部看分數
+            setTimeout(() => {
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }, 500);
+        }
+    }
+</script>
+
+</body>
+</html>
